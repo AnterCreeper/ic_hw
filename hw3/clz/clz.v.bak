@@ -1,0 +1,39 @@
+`timescale 100ps/100ps
+
+module clz(
+    input[31:0] data_in,
+    output[5:0] pos_out
+);
+
+//encode
+wire[7:0] ai;
+wire[15:0] z;
+genvar i;
+generate
+for (i = 0; i < 8; i = i + 1)
+begin:tmp
+    assign ai[i    ] = ~|data_in[i*4+3:i*4];
+    assign  z[i*2+1] = ~(data_in[i*4+3]|data_in[i*4+2]);
+    assign  z[i*2  ] = ~((~data_in[i*4+2]&data_in[i*4+1])|data_in[i*4+3]);
+end
+endgenerate
+
+//assembly
+assign pos_out = ai[7] ? (
+                ai[6] ? (
+                ai[5] ? (
+                ai[4] ? (
+                ai[3] ? (
+                ai[2] ? (
+                ai[1] ? (
+                ai[0] ? 6'h20
+                : {4'h7, z[1:0]})
+                : {4'h6, z[3:2]})
+                : {4'h5, z[5:4]})
+                : {4'h4, z[7:6]})
+                : {4'h3, z[9:8]})
+                : {4'h2, z[11:10]})
+                : {4'h1, z[13:12]})
+                : {4'h0, z[15:14]};
+
+endmodule
